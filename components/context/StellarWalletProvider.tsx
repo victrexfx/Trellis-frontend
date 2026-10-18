@@ -18,6 +18,8 @@ import {
 import { STORAGE_KEYS, DEFAULT_NETWORK, STELLAR_NETWORKS, ERROR_MESSAGES } from '@/lib/stellar-constants';
 import { LinkedWallet, Delegation } from '@/lib/wallet/types';
 import { walletService } from '@/lib/wallet/service';
+import { useSecurityEventSubscription } from '@/lib/security/events';
+import { invalidateAllVersions } from '@/lib/concurrency';
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -248,6 +250,20 @@ export function StellarWalletProvider({ children }: { children: React.ReactNode 
     setError(null);
   }, []);
 
+  const revokeSession = useCallback(async () => {
+    disconnectWallet();
+    setLinkedWallets([]);
+    setDelegations([]);
+    invalidateAllVersions();
+    await walletService.revokeSession();
+  }, [disconnectWallet]);
+
+  useSecurityEventSubscription((event) => {
+    if (event.type === 'critical-vulnerability' || event.type === 'manual-revoke') {
+      revokeSession();
+    }
+  });
+
   const value: WalletContextType = {
     wallet,
     network,
@@ -264,6 +280,7 @@ export function StellarWalletProvider({ children }: { children: React.ReactNode 
     unlinkWallet,
     manageDelegation,
     recoverSession,
+    revokeSession,
   };
 
   return (

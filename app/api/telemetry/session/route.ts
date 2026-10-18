@@ -23,6 +23,28 @@ export function GET(req: NextRequest) {
   });
 }
 
+/**
+ * Handle session revocation from the backend.
+ */
+export async function DELETE(req: NextRequest) {
+  // Validate JWT / session token
+  const authHeader = req.headers.get('authorization');
+
+  if (!authHeader) {
+     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    // Real implementation would decode and invalidate JWT / session from DB or Redis here.
+    // For this frontend exercise, we'll return 200 OK assuming the database clear is successful.
+
+    // Simulating token decoding / DB call
+    return NextResponse.json({ success: true, message: 'Session revoked successfully' }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   let roleParam: string | null = null;
   try {

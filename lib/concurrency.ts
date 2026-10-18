@@ -145,6 +145,8 @@ export class SessionManager {
 
   constructor(deviceId?: string) {
     this.deviceId = deviceId || this.generateDeviceId();
+    // Register this instance with the global tracking so it can be invalidated
+    globalSessionManagers.add(this);
   }
 
   private generateDeviceId(): string {
@@ -174,4 +176,11 @@ export class SessionManager {
   reset(): void {
     this.versions.clear();
   }
+}
+
+// Track all active SessionManager instances to invalidate them during security events
+const globalSessionManagers: Set<SessionManager> = new Set();
+
+export function invalidateAllVersions(): void {
+  globalSessionManagers.forEach(manager => manager.reset());
 }

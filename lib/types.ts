@@ -87,6 +87,7 @@ export interface WalletContextType {
   unlinkWallet: (publicKey: string) => void;
   manageDelegation: (delegation: Omit<Delegation, 'id' | 'createdAt'>) => Promise<void>;
   recoverSession: () => Promise<void>;
+  revokeSession: () => Promise<void>;
 }
 
 export interface TransactionResult {

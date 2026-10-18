@@ -9,6 +9,7 @@ import {
   Severity,
 } from "./types";
 import { SOROBAN_VULNERABILITIES } from "./vulnerabilities";
+import { dispatchSecurityEvent } from "./events";
 
 export class SorobanSecurityScanner {
   private server: any;
@@ -199,7 +200,7 @@ export class SorobanSecurityScanner {
       }
     }
 
-    return detected.sort((a, b) => {
+    const sorted = detected.sort((a, b) => {
       const order: Record<Severity, number> = {
         critical: 0,
         high: 1,
@@ -209,6 +210,13 @@ export class SorobanSecurityScanner {
       };
       return order[a.severity] - order[b.severity];
     });
+
+    const hasCritical = sorted.some((vuln) => vuln.severity === "critical");
+    if (hasCritical) {
+      dispatchSecurityEvent("critical-vulnerability", { contractId: context.contractId });
+    }
+
+    return sorted;
   }
 
   private checkVulnerability(
